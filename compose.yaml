@@ -1,0 +1,15 @@
+services:
+  dynamodb:
+    image: amazon/dynamodb-local
+    ports:
+      - "8000:8000"
+
+  nextjs:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DYNAMODB_ENDPOINT=http://dynamodb:8000
+    depends_on:
+      - dynamodb
+    command: ["npm", "run", "dev"]
