@@ -1,10 +1,14 @@
 import AWS from 'aws-sdk';
 
+// Explicitly set AWS configuration with dummy credentials for local DynamoDB
+AWS.config.update({
+    region: process.env.AWS_REGION || 'us-west-2',
+    accessKeyId: 'dummyAccessKeyId', // Placeholder value for local testing
+    secretAccessKey: 'dummySecretAccessKey', // Placeholder value for local testing
+});
+
 const dynamoDb = new AWS.DynamoDB.DocumentClient({
     endpoint: process.env.DYNAMODB_ENDPOINT,
-    region: 'us-west-2',
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
 });
 
 export default dynamoDb;

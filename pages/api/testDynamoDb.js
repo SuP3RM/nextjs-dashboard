@@ -1,39 +1,30 @@
 // pages/api/testDynamoDb.js
-import { DynamoDB } from 'aws-sdk';
-const { DocumentClient } = DynamoDB;
-const dynamoDb = new DocumentClient();
-const dynamoDbService = new DynamoDB();
+import AWS from 'aws-sdk';
+
+// Global AWS config with explicit credentials and region
+AWS.config.update({
+    region: 'us-west-2',
+    accessKeyId: 'dummyAccessKeyId',
+    secretAccessKey: 'dummySecretAccessKey',
+});
+
+// Create a new DynamoDB instance with the specified endpoint
+const dynamoDb = new AWS.DynamoDB({
+    endpoint: process.env.DYNAMODB_ENDPOINT,
+});
 
 export default async function handler(req, res) {
     try {
-        await dynamoDbService.createTable({
-            TableName: 'TestTable',
-            KeySchema: [{ AttributeName: 'id', KeyType: 'HASH' }],
-            AttributeDefinitions: [{ AttributeName: 'id', AttributeType: 'S' }],
-            ProvisionedThroughput: { ReadCapacityUnits: 1, WriteCapacityUnits: 1 },
-        }).promise().catch(() => { }); // Catch error if table exists
-
-        // Put an item
-        await dynamoDb.put({
-            TableName: 'TestTable',
-            Item: { id: '123', name: 'Test Item' },
-        }).promise();
-
-        // Get the item back
-        const data = await dynamoDb.get({
-            TableName: 'TestTable',
-            Key: { id: '123' },
-        }).promise();
-
+        // Attempt a low-level API call to list tables
+        const tables = await dynamoDb.listTables().promise();
         res.status(200).json({
-            message: 'Connection and operations successful!',
-            item: data.Item,
+            message: 'Successfully connected to DynamoDB!',
+            tables,
         });
     } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         res.status(500).json({
             message: 'Error testing DynamoDB operations',
-            error: errorMessage,
+            error: error.message,
         });
     }
 }
